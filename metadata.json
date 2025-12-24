@@ -1,0 +1,8 @@
+{
+  "name": "Mookkammal Dual-Vertical Commerce",
+  "description": "A high-performance dual-vertical e-commerce platform for Mookkammal Textiles and Super Market, featuring separate cart management, dynamic theming, and a comprehensive admin dashboard.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
