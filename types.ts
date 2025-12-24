@@ -8,6 +8,7 @@ export interface Product {
   price: number;
   oldPrice?: number;
   category: string;
+  subCategory: string;
   vertical: BusinessVertical;
   image: string;
   stock: number;

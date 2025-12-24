@@ -1,8 +1,25 @@
 
-import { Product, BusinessVertical } from './types';
+import { Product } from './types';
 
-export const TEXTILES_CATEGORIES = ['Sarees', 'Men\'s Wear', 'Kids', 'Ethic Wear', 'Fabrics'];
-export const SUPERMARKET_CATEGORIES = ['Groceries', 'Fruits & Veg', 'Snacks', 'Beverages', 'Personal Care', 'Household'];
+export const TEXTILES_STRUCTURE = {
+  'Men\'s Wear': ['Shirts', 'Trousers', 'Ethic', 'Formal', 'Casual'],
+  'Women\'s Wear': ['Sarees', 'Kurthis', 'Leggings', 'Western', 'Dresses'],
+  'Kids': ['Boys', 'Girls', 'Newborn', 'Toys'],
+  'On Trend': ['Celebrity Choice', 'Festival Special', 'Seasonal', 'Limited Edition'],
+  'Home Textiles': ['Bedsheets', 'Curtains', 'Towels', 'Cushions']
+};
+
+export const SUPERMARKET_STRUCTURE = {
+  'Groceries': ['Dals & Pulses', 'Rice & Grains', 'Atta & Flours', 'Oils & Ghee', 'Spices'],
+  'Fruits & Veg': ['Organic', 'Regular', 'Exotic', 'Cut & Sprouts'],
+  'Personal Care': ['Soaps', 'Shampoos', 'Oral Care', 'Skincare', 'Deodorants'],
+  'Household': ['Cleaning Essentials', 'Pooja Items', 'Kitchenware', 'Storage'],
+  'Beverages': ['Tea & Coffee', 'Juices', 'Health Drinks', 'Soft Drinks'],
+  'Snacks': ['Biscuits', 'Namkeen', 'Chocolates', 'Dry Fruits']
+};
+
+export const TEXTILES_CATEGORIES = Object.keys(TEXTILES_STRUCTURE);
+export const SUPERMARKET_CATEGORIES = Object.keys(SUPERMARKET_STRUCTURE);
 
 export const MOCK_PRODUCTS: Product[] = [
   // Textiles
@@ -12,9 +29,10 @@ export const MOCK_PRODUCTS: Product[] = [
     description: 'Authentic hand-woven silk saree with gold zari border.',
     price: 12500,
     oldPrice: 15000,
-    category: 'Sarees',
+    category: 'Women\'s Wear',
+    subCategory: 'Sarees',
     vertical: 'TEXTILES',
-    image: 'https://picsum.photos/seed/saree/600/800',
+    image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&q=80&w=600',
     stock: 5,
     rating: 4.8,
     reviews: 124,
@@ -26,24 +44,27 @@ export const MOCK_PRODUCTS: Product[] = [
     description: 'Premium pure silk dhoti and shirt set for special occasions.',
     price: 3500,
     category: 'Men\'s Wear',
+    subCategory: 'Ethic',
     vertical: 'TEXTILES',
-    image: 'https://picsum.photos/seed/dhoti/600/800',
+    image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=600',
     stock: 12,
     rating: 4.5,
     reviews: 86
   },
   {
     id: 't3',
-    name: 'Embroidered Anarkali',
-    description: 'Designer Anarkali suit with heavy embroidery work.',
-    price: 4200,
-    oldPrice: 5500,
-    category: 'Ethic Wear',
+    name: 'Designer Party Kurti',
+    description: 'Trendy cotton kurti with modern print.',
+    price: 1200,
+    oldPrice: 1800,
+    category: 'Women\'s Wear',
+    subCategory: 'Kurthis',
     vertical: 'TEXTILES',
-    image: 'https://picsum.photos/seed/anarkali/600/800',
-    stock: 8,
-    rating: 4.7,
-    reviews: 45
+    image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&q=80&w=600',
+    stock: 20,
+    rating: 4.6,
+    reviews: 55,
+    isNew: true
   },
   // Supermarket
   {
@@ -53,8 +74,9 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 850,
     oldPrice: 950,
     category: 'Groceries',
+    subCategory: 'Rice & Grains',
     vertical: 'SUPERMARKET',
-    image: 'https://picsum.photos/seed/rice/600/600',
+    image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&q=80&w=600',
     stock: 50,
     rating: 4.6,
     reviews: 210
@@ -65,24 +87,13 @@ export const MOCK_PRODUCTS: Product[] = [
     description: 'Healthy cold-pressed groundnut oil (1L).',
     price: 240,
     category: 'Groceries',
+    subCategory: 'Oils & Ghee',
     vertical: 'SUPERMARKET',
-    image: 'https://picsum.photos/seed/oil/600/600',
+    image: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&q=80&w=600',
     stock: 35,
     rating: 4.9,
     reviews: 155,
     isNew: true
-  },
-  {
-    id: 's3',
-    name: 'Assorted Fresh Fruit Basket',
-    description: 'Seasonal selection of fresh organic fruits.',
-    price: 450,
-    category: 'Fruits & Veg',
-    vertical: 'SUPERMARKET',
-    image: 'https://picsum.photos/seed/fruits/600/600',
-    stock: 15,
-    rating: 4.4,
-    reviews: 98
   }
 ];
 

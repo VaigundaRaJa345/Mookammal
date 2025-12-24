@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BusinessVertical, Product, CartItem, User, Order } from './types';
 import { MOCK_PRODUCTS } from './constants';
 
@@ -8,6 +8,9 @@ interface AppContextType {
   setVertical: (v: BusinessVertical) => void;
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  addProduct: (p: Omit<Product, 'id' | 'rating' | 'reviews'>) => void;
+  updateProduct: (id: string, updates: Partial<Product>) => void;
+  deleteProduct: (id: string) => void;
   cart: { TEXTILES: CartItem[]; SUPERMARKET: CartItem[] };
   addToCart: (p: Product) => void;
   removeFromCart: (id: string) => void;
@@ -25,7 +28,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return (localStorage.getItem('mookkammal_vertical') as BusinessVertical) || 'TEXTILES';
   });
   
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>(() => {
+    const saved = localStorage.getItem('mookkammal_products');
+    return saved ? JSON.parse(saved) : MOCK_PRODUCTS;
+  });
+
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('mookkammal_user');
     return saved ? JSON.parse(saved) : null;
@@ -36,7 +43,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : { TEXTILES: [], SUPERMARKET: [] };
   });
 
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<Order[]>(() => {
+    const saved = localStorage.getItem('mookkammal_orders');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
     localStorage.setItem('mookkammal_vertical', vertical);
@@ -50,7 +60,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('mookkammal_user', JSON.stringify(user));
   }, [user]);
 
+  useEffect(() => {
+    localStorage.setItem('mookkammal_products', JSON.stringify(products));
+  }, [products]);
+
+  useEffect(() => {
+    localStorage.setItem('mookkammal_orders', JSON.stringify(orders));
+  }, [orders]);
+
   const setVertical = (v: BusinessVertical) => setVerticalState(v);
+
+  const addProduct = (p: Omit<Product, 'id' | 'rating' | 'reviews'>) => {
+    const newProduct: Product = {
+      ...p,
+      id: `p-${Date.now()}`,
+      rating: 5.0,
+      reviews: 0
+    };
+    setProducts(prev => [newProduct, ...prev]);
+  };
+
+  const updateProduct = (id: string, updates: Partial<Product>) => {
+    setProducts(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p));
+  };
+
+  const deleteProduct = (id: string) => {
+    setProducts(prev => prev.filter(p => p.id !== id));
+  };
 
   const addToCart = (product: Product) => {
     setCart(prev => {
@@ -103,7 +139,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      vertical, setVertical, products, setProducts, cart, addToCart, removeFromCart, updateQuantity, user, setUser, orders, placeOrder
+      vertical, setVertical, products, setProducts, addProduct, updateProduct, deleteProduct, cart, addToCart, removeFromCart, updateQuantity, user, setUser, orders, placeOrder
     }}>
       {children}
     </AppContext.Provider>
