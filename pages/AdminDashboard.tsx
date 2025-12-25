@@ -1,10 +1,11 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAppContext } from '../AppContext';
 import { THEME_CONFIG, TEXTILES_STRUCTURE, SUPERMARKET_STRUCTURE, TEXTILES_CATEGORIES, SUPERMARKET_CATEGORIES } from '../constants';
 import { 
   LayoutDashboard, Package, ShoppingCart, Users, Plus, 
   TrendingUp, AlertCircle, Edit, Trash2, Search, Filter,
-  LogOut, Settings, BarChart3, X, Eye, ChevronRight, Layers
+  LogOut, Settings, BarChart3, X, Eye, ChevronRight, Layers, Sparkles, Loader2
 } from 'lucide-react';
 import { 
   XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -13,15 +14,33 @@ import {
 import { Product, BusinessVertical } from '../types';
 
 const AdminDashboard: React.FC = () => {
-  const { products, addProduct, updateProduct, deleteProduct, user, setUser, vertical, orders } = useAppContext();
+  const { products, addProduct, updateProduct, deleteProduct, user, setUser, vertical, orders, getAIResponse } = useAppContext();
   const [activeTab, setActiveTab] = useState('overview');
   const [inventoryView, setInventoryView] = useState<BusinessVertical>('TEXTILES');
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  
+  const [aiReport, setAiReport] = useState<string | null>(null);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   const theme = THEME_CONFIG[vertical];
+
+  const generateStrategicInsights = async () => {
+    setIsGeneratingAi(true);
+    const context = `
+      Current Business Snapshot:
+      - Total Orders: ${orders.length}
+      - Total Inventory: ${products.length} SKUs
+      - Low Stock Items: ${products.filter(p => p.stock < 10).length}
+      - Top Vertical: ${products.filter(p => p.vertical === 'TEXTILES').length > products.filter(p => p.vertical === 'SUPERMARKET').length ? 'Textiles' : 'Supermarket'}
+      Please provide 3 strategic recommendations for business growth and inventory management.
+    `;
+    const report = await getAIResponse(context, 'pro');
+    setAiReport(report);
+    setIsGeneratingAi(false);
+  };
 
   // Stats logic
   const stats = useMemo(() => {
@@ -73,9 +92,8 @@ const AdminDashboard: React.FC = () => {
   // Product Form Modal Component
   const ProductForm = () => {
     const defaultVertical = editingProduct?.vertical || inventoryView;
-    // Fix: Explicitly type structure as Record<string, string[]> to ensure indexing works correctly and avoids 'never' types.
     const structure: Record<string, string[]> = defaultVertical === 'TEXTILES' ? TEXTILES_STRUCTURE : SUPERMARKET_STRUCTURE;
-    const categories = Object.keys(structure);
+    const categoriesList = Object.keys(structure);
     
     const [form, setForm] = useState({
       name: editingProduct?.name || '',
@@ -83,18 +101,15 @@ const AdminDashboard: React.FC = () => {
       price: editingProduct?.price || 0,
       oldPrice: editingProduct?.oldPrice || 0,
       vertical: defaultVertical,
-      category: editingProduct?.category || categories[0],
-      // Fix: Removed 'as keyof typeof structure' since structure is now explicitly typed as a Record.
-      subCategory: editingProduct?.subCategory || structure[categories[0]][0],
+      category: editingProduct?.category || categoriesList[0],
+      subCategory: editingProduct?.subCategory || structure[categoriesList[0]][0],
       stock: editingProduct?.stock || 0,
       image: editingProduct?.image || 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?auto=format&fit=crop&q=80&w=800'
     });
 
-    // Fix: Removed 'as keyof typeof structure' to resolve property 'map' does not exist on type 'never' errors on usage.
     const currentSubCategories = structure[form.category] || [];
 
     const handleVerticalChange = (v: BusinessVertical) => {
-      // Fix: Explicitly type newStructure as Record<string, string[]> for safe dynamic indexing.
       const newStructure: Record<string, string[]> = v === 'TEXTILES' ? TEXTILES_STRUCTURE : SUPERMARKET_STRUCTURE;
       const newCats = Object.keys(newStructure);
       const newCat = newCats[0];
@@ -103,7 +118,6 @@ const AdminDashboard: React.FC = () => {
     };
 
     const handleCategoryChange = (c: string) => {
-      // Fix: Use explicit indexing on structure which is now a Record.
       const newSub = structure[c][0];
       setForm({ ...form, category: c, subCategory: newSub });
     };
@@ -173,7 +187,7 @@ const AdminDashboard: React.FC = () => {
                   onChange={e => handleCategoryChange(e.target.value)}
                   className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-3 px-4 outline-none font-bold focus:border-gray-300"
                 >
-                  {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                  {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
 
@@ -329,6 +343,38 @@ const AdminDashboard: React.FC = () => {
                   <h4 className="text-4xl font-black text-gray-900">{stat.value}</h4>
                 </div>
               ))}
+            </div>
+
+            {/* AI Strategic Insights */}
+            <div className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-12 opacity-5">
+                <Sparkles size={120} />
+              </div>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                  <h3 className="text-2xl font-black text-gray-900 flex items-center">
+                    <Sparkles className="mr-3 text-amber-500" /> Strategic AI Insights
+                  </h3>
+                  <p className="text-gray-400 text-sm font-bold">Generated from real-time business performance</p>
+                </div>
+                <button 
+                  onClick={generateStrategicInsights}
+                  disabled={isGeneratingAi}
+                  className={`px-6 py-3 rounded-xl bg-gray-900 text-white font-bold text-sm flex items-center hover:bg-gray-800 transition-all ${isGeneratingAi && 'opacity-50'}`}
+                >
+                  {isGeneratingAi ? <Loader2 className="mr-2 animate-spin" size={16} /> : <Sparkles className="mr-2" size={16} />}
+                  Generate Analysis
+                </button>
+              </div>
+              {aiReport ? (
+                <div className="prose prose-sm max-w-none animate-in fade-in duration-500">
+                  <p className="text-gray-600 leading-relaxed font-medium whitespace-pre-wrap">{aiReport}</p>
+                </div>
+              ) : (
+                <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-3xl">
+                   <p className="text-gray-400 font-bold mb-4">Click "Generate Analysis" for AI-powered business growth recommendations</p>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">

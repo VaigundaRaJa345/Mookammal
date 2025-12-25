@@ -10,6 +10,7 @@ import AuthPage from './pages/AuthPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ProductDetail from './pages/ProductDetail';
 import MobileBottomNav from './components/MobileBottomNav';
+import AIChatBot from './components/AIChatBot';
 
 const NavigationRouter: React.FC = () => {
   const { user } = useAppContext();
@@ -47,6 +48,7 @@ const NavigationRouter: React.FC = () => {
       </main>
       <Footer onNavigate={navigateTo} />
       <MobileBottomNav onNavigate={navigateTo} currentPage={currentPage} />
+      <AIChatBot />
     </div>
   );
 };

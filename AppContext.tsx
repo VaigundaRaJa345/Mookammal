@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { BusinessVertical, Product, CartItem, User, Order } from './types';
 import { MOCK_PRODUCTS } from './constants';
+import { GoogleGenAI } from "@google/genai";
 
 interface AppContextType {
   vertical: BusinessVertical;
@@ -19,6 +20,7 @@ interface AppContextType {
   setUser: (u: User | null) => void;
   orders: Order[];
   placeOrder: () => void;
+  getAIResponse: (prompt: string, modelType?: 'flash' | 'pro') => Promise<string>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -69,6 +71,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [orders]);
 
   const setVertical = (v: BusinessVertical) => setVerticalState(v);
+
+  const getAIResponse = async (prompt: string, modelType: 'flash' | 'pro' = 'flash'): Promise<string> => {
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const modelName = modelType === 'pro' ? 'gemini-3-pro-preview' : 'gemini-3-flash-preview';
+      
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: {
+          systemInstruction: `You are the AI Assistant for Mookkammal Group. 
+          We have two verticals: Mookkammal Textiles (Heritage, Sarees, Dhotis, Fashion) and Mookkammal Super Market (Quality Groceries, Fresh Produce).
+          The current vertical being browsed is ${vertical}.
+          Be polite, professional, and helpful. Use product details from the catalog if relevant.
+          Keep responses concise but insightful.`
+        }
+      });
+      return response.text || "I'm sorry, I couldn't process that request.";
+    } catch (error) {
+      console.error("AI Error:", error);
+      return "I'm having trouble connecting to my brain right now. Please try again later!";
+    }
+  };
 
   const addProduct = (p: Omit<Product, 'id' | 'rating' | 'reviews'>) => {
     const newProduct: Product = {
@@ -139,7 +164,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      vertical, setVertical, products, setProducts, addProduct, updateProduct, deleteProduct, cart, addToCart, removeFromCart, updateQuantity, user, setUser, orders, placeOrder
+      vertical, setVertical, products, setProducts, addProduct, updateProduct, deleteProduct, cart, addToCart, removeFromCart, updateQuantity, user, setUser, orders, placeOrder, getAIResponse
     }}>
       {children}
     </AppContext.Provider>

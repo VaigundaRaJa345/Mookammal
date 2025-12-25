@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../AppContext';
 import { THEME_CONFIG } from '../constants';
-import { ShoppingBag, User, Search, Menu, X, ShoppingCart, ChevronDown, Package } from 'lucide-react';
+import { ShoppingBag, User, Search, Menu, X, ShoppingCart, ChevronDown, Package, AlertCircle } from 'lucide-react';
 
 interface HeaderProps {
   onNavigate: (page: string, params?: any) => void;
@@ -14,6 +14,9 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const theme = THEME_CONFIG[vertical];
   const cartCount = cart[vertical].reduce((acc, item) => acc + item.quantity, 0);
+  
+  const otherVertical = vertical === 'TEXTILES' ? 'SUPERMARKET' : 'TEXTILES';
+  const otherCartCount = cart[otherVertical].reduce((acc, item) => acc + item.quantity, 0);
 
   const toggleVertical = () => {
     setVertical(vertical === 'TEXTILES' ? 'SUPERMARKET' : 'TEXTILES');
@@ -33,7 +36,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
             </div>
             <div className="hidden sm:block">
               <h1 className={`font-brand text-xl font-bold ${theme.text} leading-tight`}>
-                {vertical === 'TEXTILES' ? 'Mookkammal' : 'Mookkammal'}
+                Mookkammal
               </h1>
               <p className="text-[10px] text-gray-500 uppercase tracking-widest font-medium">
                 {vertical === 'TEXTILES' ? 'Textiles' : 'Super Market'}
@@ -60,15 +63,31 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
           {/* Actions & Vertical Switcher */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Business Toggle */}
-            <div 
-              onClick={toggleVertical}
-              className={`relative flex items-center w-32 sm:w-40 h-10 rounded-full cursor-pointer p-1 transition-all duration-300 ${vertical === 'TEXTILES' ? 'bg-blue-900' : 'bg-emerald-600'}`}
-            >
+            <div className="relative group">
               <div 
-                className={`absolute w-[48%] h-8 bg-white rounded-full shadow-md transition-transform duration-300 transform ${vertical === 'TEXTILES' ? 'translate-x-0' : 'translate-x-[104%]'}`}
-              />
-              <span className={`z-10 w-1/2 text-[10px] font-bold text-center transition-colors ${vertical === 'TEXTILES' ? 'text-blue-900' : 'text-white'}`}>TEXTILES</span>
-              <span className={`z-10 w-1/2 text-[10px] font-bold text-center transition-colors ${vertical === 'SUPERMARKET' ? 'text-emerald-900' : 'text-white'}`}>SUPER</span>
+                onClick={toggleVertical}
+                className={`relative flex items-center w-32 sm:w-40 h-10 rounded-full cursor-pointer p-1 transition-all duration-300 ${vertical === 'TEXTILES' ? 'bg-blue-900' : 'bg-emerald-600'}`}
+              >
+                <div 
+                  className={`absolute w-[48%] h-8 bg-white rounded-full shadow-md transition-transform duration-300 transform ${vertical === 'TEXTILES' ? 'translate-x-0' : 'translate-x-[104%]'}`}
+                />
+                <span className={`z-10 w-1/2 text-[10px] font-bold text-center transition-colors ${vertical === 'TEXTILES' ? 'text-blue-900' : 'text-white'}`}>TEXTILES</span>
+                <span className={`z-10 w-1/2 text-[10px] font-bold text-center transition-colors ${vertical === 'SUPERMARKET' ? 'text-emerald-900' : 'text-white'}`}>SUPER</span>
+                {otherCartCount > 0 && (
+                   <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                     <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                   </span>
+                )}
+              </div>
+              {otherCartCount > 0 && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-rose-50 p-3 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all">
+                  <p className="text-[10px] font-black text-rose-500 uppercase flex items-center mb-1">
+                    <AlertCircle size={10} className="mr-1" /> Other Cart Active
+                  </p>
+                  <p className="text-xs text-gray-500">You have {otherCartCount} items in {otherVertical === 'TEXTILES' ? 'Textiles' : 'Super Market'}.</p>
+                </div>
+              )}
             </div>
 
             <div className="hidden sm:flex items-center bg-gray-100 rounded-full px-3 py-1.5 focus-within:ring-2 focus-within:ring-opacity-50 transition-all border border-transparent focus-within:bg-white focus-within:border-gray-200">
@@ -108,27 +127,6 @@ const Header: React.FC<HeaderProps> = ({ onNavigate, currentPage }) => {
           </div>
         </div>
       </div>
-
-      {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 right-0 bg-white shadow-xl border-t border-gray-100 py-6 px-4 animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className="flex flex-col space-y-4">
-            <button onClick={() => { onNavigate('home'); setIsMobileMenuOpen(false); }} className="text-lg font-semibold text-gray-800 text-left">Home</button>
-            <button onClick={() => { onNavigate('category'); setIsMobileMenuOpen(false); }} className="text-lg font-semibold text-gray-800 text-left">Shop Collections</button>
-            <button onClick={() => { onNavigate('auth'); setIsMobileMenuOpen(false); }} className="text-lg font-semibold text-gray-800 text-left">My Account</button>
-            <div className="h-px bg-gray-100 w-full" />
-            <div className="flex items-center space-x-2 py-2">
-              <div className={`p-2 rounded-lg ${theme.secondary} ${theme.accent}`}>
-                <Package size={20} />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-bold text-gray-900">{theme.name}</span>
-                <span className="text-xs text-gray-500">Currently browsing</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </header>
   );
 };

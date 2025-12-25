@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../AppContext';
 import { THEME_CONFIG } from '../constants';
-import { Star, Truck, ShieldCheck, ArrowLeft, Plus, Minus, Share2, Heart, ShoppingBag } from 'lucide-react';
+import { Star, Truck, ShieldCheck, ArrowLeft, Plus, Minus, Share2, Heart, ShoppingBag, Sparkles, Loader2 } from 'lucide-react';
 
 interface ProductDetailProps {
   productId: string;
@@ -10,11 +10,28 @@ interface ProductDetailProps {
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onNavigate }) => {
-  const { products, vertical, addToCart } = useAppContext();
+  const { products, vertical, addToCart, getAIResponse } = useAppContext();
   const [quantity, setQuantity] = useState(1);
+  const [aiPerspective, setAiPerspective] = useState<string | null>(null);
+  const [isLoadingAi, setIsLoadingAi] = useState(false);
   const theme = THEME_CONFIG[vertical];
   
   const product = products.find(p => p.id === productId);
+
+  useEffect(() => {
+    if (product && !aiPerspective) {
+      const fetchPerspective = async () => {
+        setIsLoadingAi(true);
+        const prompt = vertical === 'TEXTILES' 
+          ? `Provide professional fashion styling tips for this item: ${product.name}. Description: ${product.description}`
+          : `Provide unique cooking tips or recipe ideas for this item: ${product.name}. Description: ${product.description}`;
+        const resp = await getAIResponse(prompt);
+        setAiPerspective(resp);
+        setIsLoadingAi(false);
+      };
+      fetchPerspective();
+    }
+  }, [product, vertical, getAIResponse]);
 
   if (!product) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -71,6 +88,24 @@ const ProductDetail: React.FC<ProductDetailProps> = ({ productId, onNavigate }) 
               
               <h1 className="text-4xl lg:text-5xl font-black text-gray-900 mb-4 leading-tight">{product.name}</h1>
               <p className="text-lg text-gray-600 leading-relaxed mb-8">{product.description}</p>
+
+              {/* AI Section */}
+              <div className={`p-6 rounded-3xl mb-8 border-2 border-dashed ${theme.border} bg-gray-50/50`}>
+                <div className="flex items-center mb-4">
+                  <Sparkles className={`mr-2 ${theme.accent}`} size={20} />
+                  <h4 className="font-black text-sm uppercase tracking-widest text-gray-800">
+                    {vertical === 'TEXTILES' ? 'AI Stylist Recommendation' : 'AI Chef Tips'}
+                  </h4>
+                </div>
+                {isLoadingAi ? (
+                  <div className="flex items-center space-x-2 py-4">
+                    <Loader2 size={18} className="animate-spin text-gray-400" />
+                    <span className="text-xs font-bold text-gray-400">Consulting AI experts...</span>
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-600 italic leading-relaxed">"{aiPerspective}"</p>
+                )}
+              </div>
 
               <div className="flex items-baseline space-x-4 mb-10">
                 <span className={`text-5xl font-black ${theme.accent}`}>₹{product.price.toLocaleString()}</span>
